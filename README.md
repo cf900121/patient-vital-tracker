@@ -33,12 +33,13 @@ Follow these steps to get the project up and running locally:
 
 2. **Navigate to the project directory:**
 
+   ```bash
    cd patient-vital-tracker
 
 3. **Install dependencies:**
-
+   ```bash
    npm install
 
 4. **Start the development server:**
-
+   ```bash
    npm run dev
