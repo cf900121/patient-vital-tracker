@@ -1,16 +1,36 @@
 // src/App.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
+// Register chart components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 function App() {
-  // State variables for user inputs
+  // State variables for user inputs and stored data
   const [heartRate, setHeartRate] = useState('');
   const [systolic, setSystolic] = useState('');
   const [diastolic, setDiastolic] = useState('');
   const [temperature, setTemperature] = useState('');
   const [message, setMessage] = useState('');
   const [healthStatus, setHealthStatus] = useState('');
+  const [dataHistory, setDataHistory] = useState({
+    heartRate: [],
+    systolic: [],
+    diastolic: [],
+    temperature: [],
+    timestamps: []
+  });
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const storedData = localStorage.getItem('patientData');
+    if (storedData) {
+      setDataHistory(JSON.parse(storedData));
+    }
+  }, []);
 
   // Function to validate inputs
   const validateInputs = () => {
@@ -45,17 +65,30 @@ function App() {
     setHealthStatus(`${bpStatus}, ${heartRateStatus}, ${temperatureStatus}`);
   };
 
-  // Handle form submission
+  // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     setMessage('');
 
     if (validateInputs()) {
+      // Add the new data to the history
+      const newData = {
+        heartRate: [...dataHistory.heartRate, heartRate],
+        systolic: [...dataHistory.systolic, systolic],
+        diastolic: [...dataHistory.diastolic, diastolic],
+        temperature: [...dataHistory.temperature, temperature],
+        timestamps: [...dataHistory.timestamps, new Date().toLocaleString()]
+      };
+
+      // Update state and save to local storage
+      setDataHistory(newData);
+      localStorage.setItem('patientData', JSON.stringify(newData));
+
       evaluateHealth();
     }
   };
 
-  // Handle reset
+  // Function to handle reset
   const handleReset = () => {
     setHeartRate('');
     setSystolic('');
@@ -63,6 +96,45 @@ function App() {
     setTemperature('');
     setMessage('');
     setHealthStatus('');
+  };
+
+  // Chart data preparation
+  const chartData = {
+    labels: dataHistory.timestamps,
+    datasets: [
+      {
+        label: 'Heart Rate (bpm)',
+        data: dataHistory.heartRate,
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        fill: false,
+        tension: 0.1
+      },
+      {
+        label: 'Systolic BP (mmHg)',
+        data: dataHistory.systolic,
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        fill: false,
+        tension: 0.1
+      },
+      {
+        label: 'Diastolic BP (mmHg)',
+        data: dataHistory.diastolic,
+        borderColor: 'rgb(54, 162, 235)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        fill: false,
+        tension: 0.1
+      },
+      {
+        label: 'Temperature (°F)',
+        data: dataHistory.temperature,
+        borderColor: 'rgb(153, 102, 255)',
+        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        fill: false,
+        tension: 0.1
+      }
+    ]
   };
 
   return (
@@ -114,6 +186,14 @@ function App() {
         <div className="health-status">
           <h2>Health Status:</h2>
           <p>{healthStatus}</p>
+        </div>
+      )}
+
+      {/* Chart to visualize the data */}
+      {dataHistory.timestamps.length > 0 && (
+        <div className="chart-container">
+          <h2>Vitals Over Time</h2>
+          <Line data={chartData} />
         </div>
       )}
     </div>
