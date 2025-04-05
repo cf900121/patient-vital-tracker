@@ -1,12 +1,44 @@
-# React + Vite
+# Patient Vital Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based application to track and manage patient vital signs. This app allows users to input and monitor vital statistics like heart rate, blood pressure, temperature, and more in an easy-to-use interface.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- **Track Patient Vitals:** Easily record and monitor heart rate, blood pressure, and other key health metrics.
+- **User-Friendly Interface:** Simple forms and visualizations to quickly input and analyze data.
+- **Real-Time Updates:** Immediate feedback and real-time display of entered data.
+- **Responsive Design:** Accessible on both desktop and mobile devices.
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Technologies Used
+
+- **React**: Frontend JavaScript library for building the user interface.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **Vite**: Next-generation build tool for faster development.
+- **PostCSS**: CSS post-processing tool.
+
+---
+
+## Getting Started
+
+Follow these steps to get the project up and running locally:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/yourusername/patient-vital-tracker.git
+
+2. **Navigate to the project directory:**
+
+   cd patient-vital-tracker
+
+3. **Install dependencies:**
+
+   npm install
+
+4. **Start the development server:**
+
+   npm run dev
