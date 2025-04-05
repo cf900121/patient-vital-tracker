@@ -1,80 +1,119 @@
-import { useState } from 'react';
+// src/App.jsx
+
+import React, { useState } from 'react';
+import './App.css';
 
 function App() {
-  const [patientVitals, setPatientVitals] = useState({
-    heartRate: '',
-    bloodPressure: '',
-    temperature: '',
-  });
+  // State variables for user inputs
+  const [heartRate, setHeartRate] = useState('');
+  const [systolic, setSystolic] = useState('');
+  const [diastolic, setDiastolic] = useState('');
+  const [temperature, setTemperature] = useState('');
+  const [message, setMessage] = useState('');
+  const [healthStatus, setHealthStatus] = useState('');
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleChange = (e) => {
-    setPatientVitals({
-      ...patientVitals,
-      [e.target.name]: e.target.value,
-    });
+  // Function to validate inputs
+  const validateInputs = () => {
+    if (heartRate < 40 || heartRate > 180) {
+      setMessage('Heart rate must be between 40 and 180 bpm.');
+      return false;
+    }
+    if (systolic < 90 || systolic > 200) {
+      setMessage('Systolic BP must be between 90 and 200 mmHg.');
+      return false;
+    }
+    if (diastolic < 60 || diastolic > 120) {
+      setMessage('Diastolic BP must be between 60 and 120 mmHg.');
+      return false;
+    }
+    if (temperature < 95 || temperature > 104) {
+      setMessage('Temperature must be between 95 and 104 °F.');
+      return false;
+    }
+    return true;
   };
 
+  // Function to evaluate health status based on the inputs
+  const evaluateHealth = () => {
+    let bpStatus = 'Normal';
+    if (systolic > 130 || diastolic > 80) {
+      bpStatus = 'High Blood Pressure (Hypertension)';
+    }
+    let heartRateStatus = heartRate > 100 ? 'High Heart Rate' : 'Normal Heart Rate';
+    let temperatureStatus = temperature > 98.6 ? 'Fever' : 'Normal Temperature';
+
+    setHealthStatus(`${bpStatus}, ${heartRateStatus}, ${temperatureStatus}`);
+  };
+
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setMessage('');
+
+    if (validateInputs()) {
+      evaluateHealth();
+    }
+  };
+
+  // Handle reset
+  const handleReset = () => {
+    setHeartRate('');
+    setSystolic('');
+    setDiastolic('');
+    setTemperature('');
+    setMessage('');
+    setHealthStatus('');
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Patient Vital Tracker</h1>
-      
-      {!isSubmitted ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="heartRate" className="block text-sm font-medium">Heart Rate (bpm):</label>
-            <input
-              type="number"
-              id="heartRate"
-              name="heartRate"
-              value={patientVitals.heartRate}
-              onChange={handleChange}
-              className="mt-1 p-2 border rounded w-full"
-              required
-            />
-          </div>
+    <div className="app">
+      <h1>Patient Vital Tracker</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="input-group">
+          <label>Heart Rate (bpm):</label>
+          <input
+            type="number"
+            value={heartRate}
+            onChange={(e) => setHeartRate(e.target.value)}
+            placeholder="Enter heart rate between 40 and 180"
+          />
+        </div>
+        <div className="input-group">
+          <label>Systolic BP (mmHg):</label>
+          <input
+            type="number"
+            value={systolic}
+            onChange={(e) => setSystolic(e.target.value)}
+            placeholder="Enter systolic BP between 90 and 200"
+          />
+        </div>
+        <div className="input-group">
+          <label>Diastolic BP (mmHg):</label>
+          <input
+            type="number"
+            value={diastolic}
+            onChange={(e) => setDiastolic(e.target.value)}
+            placeholder="Enter diastolic BP between 60 and 120"
+          />
+        </div>
+        <div className="input-group">
+          <label>Temperature (°F):</label>
+          <input
+            type="number"
+            value={temperature}
+            onChange={(e) => setTemperature(e.target.value)}
+            placeholder="Enter temperature between 95 and 104"
+          />
+        </div>
+        {message && <p className="error-message">{message}</p>}
+        <button type="submit">Submit</button>
+        <button type="button" onClick={handleReset}>Reset</button>
+      </form>
 
-          <div>
-            <label htmlFor="bloodPressure" className="block text-sm font-medium">Blood Pressure (mmHg):</label>
-            <input
-              type="text"
-              id="bloodPressure"
-              name="bloodPressure"
-              value={patientVitals.bloodPressure}
-              onChange={handleChange}
-              className="mt-1 p-2 border rounded w-full"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="temperature" className="block text-sm font-medium">Temperature (°F):</label>
-            <input
-              type="number"
-              id="temperature"
-              name="temperature"
-              value={patientVitals.temperature}
-              onChange={handleChange}
-              className="mt-1 p-2 border rounded w-full"
-              required
-            />
-          </div>
-
-          <button type="submit" className="mt-4 p-2 bg-blue-500 text-white rounded w-full">
-            Submit
-          </button>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          <p><strong>Heart Rate:</strong> {patientVitals.heartRate} bpm</p>
-          <p><strong>Blood Pressure:</strong> {patientVitals.bloodPressure} mmHg</p>
-          <p><strong>Temperature:</strong> {patientVitals.temperature} °F</p>
+      {healthStatus && (
+        <div className="health-status">
+          <h2>Health Status:</h2>
+          <p>{healthStatus}</p>
         </div>
       )}
     </div>
