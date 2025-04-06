@@ -1,203 +1,135 @@
-// src/App.jsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
-// Register chart components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+const normalRanges = {
+  temperature: { min: 97.8, max: 99.1 },
+  heartRate: { min: 60, max: 100 },
+  oxygenSaturation: { min: 95, max: 100 },
+  bloodPressure: { min: 90, max: 120 }, // General range for systolic BP
+};
 
-function App() {
-  // State variables for user inputs and stored data
-  const [heartRate, setHeartRate] = useState('');
-  const [systolic, setSystolic] = useState('');
-  const [diastolic, setDiastolic] = useState('');
-  const [temperature, setTemperature] = useState('');
-  const [message, setMessage] = useState('');
-  const [healthStatus, setHealthStatus] = useState('');
-  const [dataHistory, setDataHistory] = useState({
-    heartRate: [],
-    systolic: [],
-    diastolic: [],
-    temperature: [],
-    timestamps: []
+const App = () => {
+  const [formData, setFormData] = useState({
+    temperature: '',
+    heartRate: '',
+    oxygenSaturation: '',
+    bloodPressure: '',
   });
 
-  // Load data from localStorage on component mount
-  useEffect(() => {
-    const storedData = localStorage.getItem('patientData');
-    if (storedData) {
-      setDataHistory(JSON.parse(storedData));
-    }
-  }, []);
+  const [records, setRecords] = useState([]);
 
-  // Function to validate inputs
-  const validateInputs = () => {
-    if (heartRate < 40 || heartRate > 180) {
-      setMessage('Heart rate must be between 40 and 180 bpm.');
-      return false;
-    }
-    if (systolic < 90 || systolic > 200) {
-      setMessage('Systolic BP must be between 90 and 200 mmHg.');
-      return false;
-    }
-    if (diastolic < 60 || diastolic > 120) {
-      setMessage('Diastolic BP must be between 60 and 120 mmHg.');
-      return false;
-    }
-    if (temperature < 95 || temperature > 104) {
-      setMessage('Temperature must be between 95 and 104 °F.');
-      return false;
-    }
-    return true;
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  // Function to evaluate health status based on the inputs
-  const evaluateHealth = () => {
-    let bpStatus = 'Normal';
-    if (systolic > 130 || diastolic > 80) {
-      bpStatus = 'High Blood Pressure (Hypertension)';
-    }
-    let heartRateStatus = heartRate > 100 ? 'High Heart Rate' : 'Normal Heart Rate';
-    let temperatureStatus = temperature > 98.6 ? 'Fever' : 'Normal Temperature';
-
-    setHealthStatus(`${bpStatus}, ${heartRateStatus}, ${temperatureStatus}`);
-  };
-
-  // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    setMessage('');
+    const newRecord = {
+      ...formData,
+      timestamp: new Date().toLocaleString(),
+    };
+    setRecords([newRecord, ...records]);
+    setFormData({
+      temperature: '',
+      heartRate: '',
+      oxygenSaturation: '',
+      bloodPressure: '',
+    });
+  };
 
-    if (validateInputs()) {
-      // Add the new data to the history
-      const newData = {
-        heartRate: [...dataHistory.heartRate, heartRate],
-        systolic: [...dataHistory.systolic, systolic],
-        diastolic: [...dataHistory.diastolic, diastolic],
-        temperature: [...dataHistory.temperature, temperature],
-        timestamps: [...dataHistory.timestamps, new Date().toLocaleString()]
-      };
-
-      // Update state and save to local storage
-      setDataHistory(newData);
-      localStorage.setItem('patientData', JSON.stringify(newData));
-
-      evaluateHealth();
+  const isOutOfRange = (value, type) => {
+    const range = normalRanges[type];
+    if (type === 'bloodPressure') {
+      return value < range.min || value > range.max;
     }
-  };
-
-  // Function to handle reset
-  const handleReset = () => {
-    setHeartRate('');
-    setSystolic('');
-    setDiastolic('');
-    setTemperature('');
-    setMessage('');
-    setHealthStatus('');
-  };
-
-  // Chart data preparation
-  const chartData = {
-    labels: dataHistory.timestamps,
-    datasets: [
-      {
-        label: 'Heart Rate (bpm)',
-        data: dataHistory.heartRate,
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        fill: false,
-        tension: 0.1
-      },
-      {
-        label: 'Systolic BP (mmHg)',
-        data: dataHistory.systolic,
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        fill: false,
-        tension: 0.1
-      },
-      {
-        label: 'Diastolic BP (mmHg)',
-        data: dataHistory.diastolic,
-        borderColor: 'rgb(54, 162, 235)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        fill: false,
-        tension: 0.1
-      },
-      {
-        label: 'Temperature (°F)',
-        data: dataHistory.temperature,
-        borderColor: 'rgb(153, 102, 255)',
-        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-        fill: false,
-        tension: 0.1
-      }
-    ]
+    return value < range.min || value > range.max;
   };
 
   return (
-    <div className="app">
+    <div className="container">
       <h1>Patient Vital Tracker</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <label>Heart Rate (bpm):</label>
-          <input
-            type="number"
-            value={heartRate}
-            onChange={(e) => setHeartRate(e.target.value)}
-            placeholder="Enter heart rate between 40 and 180"
-          />
-        </div>
-        <div className="input-group">
-          <label>Systolic BP (mmHg):</label>
-          <input
-            type="number"
-            value={systolic}
-            onChange={(e) => setSystolic(e.target.value)}
-            placeholder="Enter systolic BP between 90 and 200"
-          />
-        </div>
-        <div className="input-group">
-          <label>Diastolic BP (mmHg):</label>
-          <input
-            type="number"
-            value={diastolic}
-            onChange={(e) => setDiastolic(e.target.value)}
-            placeholder="Enter diastolic BP between 60 and 120"
-          />
-        </div>
-        <div className="input-group">
-          <label>Temperature (°F):</label>
-          <input
-            type="number"
-            value={temperature}
-            onChange={(e) => setTemperature(e.target.value)}
-            placeholder="Enter temperature between 95 and 104"
-          />
-        </div>
-        {message && <p className="error-message">{message}</p>}
-        <button type="submit">Submit</button>
-        <button type="button" onClick={handleReset}>Reset</button>
+      <form onSubmit={handleSubmit} className="form">
+        <label>Temperature (°F)</label>
+        <input
+          type="number"
+          name="temperature"
+          value={formData.temperature}
+          onChange={handleChange}
+        />
+
+        <label>Heart Rate (bpm)</label>
+        <input
+          type="number"
+          name="heartRate"
+          value={formData.heartRate}
+          onChange={handleChange}
+        />
+
+        <label>Oxygen Saturation (%)</label>
+        <input
+          type="number"
+          name="oxygenSaturation"
+          value={formData.oxygenSaturation}
+          onChange={handleChange}
+        />
+
+        <label>Blood Pressure (Systolic/Diastolic)</label>
+        <input
+          type="text"
+          name="bloodPressure"
+          value={formData.bloodPressure}
+          onChange={handleChange}
+        />
+
+        <button type="submit">Add Vital</button>
       </form>
 
-      {healthStatus && (
-        <div className="health-status">
-          <h2>Health Status:</h2>
-          <p>{healthStatus}</p>
-        </div>
-      )}
-
-      {/* Chart to visualize the data */}
-      {dataHistory.timestamps.length > 0 && (
-        <div className="chart-container">
-          <h2>Vitals Over Time</h2>
-          <Line data={chartData} />
-        </div>
-      )}
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Temperature (°F)</th>
+            <th>Heart Rate (bpm)</th>
+            <th>Oxygen Saturation (%)</th>
+            <th>Blood Pressure (S/D)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record, index) => {
+            const [systolic, diastolic] = record.bloodPressure.split('/');
+            return (
+              <tr key={index}>
+                <td>{record.timestamp}</td>
+                <td
+                  className={isOutOfRange(record.temperature, 'temperature') ? 'out-of-range' : ''}
+                >
+                  {record.temperature}
+                </td>
+                <td
+                  className={isOutOfRange(record.heartRate, 'heartRate') ? 'out-of-range' : ''}
+                >
+                  {record.heartRate}
+                </td>
+                <td
+                  className={isOutOfRange(record.oxygenSaturation, 'oxygenSaturation') ? 'out-of-range' : ''}
+                >
+                  {record.oxygenSaturation}
+                </td>
+                <td
+                  className={isOutOfRange(systolic, 'bloodPressure') ? 'out-of-range' : ''}
+                >
+                  {record.bloodPressure}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
 export default App;
